@@ -1,0 +1,88 @@
+{
+  "name": "xagent-vscode",
+  "displayName": "X-Agent",
+  "description": "X-Agent — Multi-model AI Agent for VS Code",
+  "version": "0.1.0",
+  "publisher": "qize-auto",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Debuggers",
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:xagent.sidebar"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "xagent",
+          "title": "X-Agent",
+          "icon": "$(hubot)"
+        }
+      ]
+    },
+    "views": {
+      "xagent": [
+        {
+          "type": "webview",
+          "id": "xagent.sidebar",
+          "name": "X-Agent",
+          "icon": "$(hubot)"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "xagent.ask",
+        "title": "Ask X-Agent",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "xagent.startServer",
+        "title": "X-Agent: Start Server"
+      },
+      {
+        "command": "xagent.stopServer",
+        "title": "X-Agent: Stop Server"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "xagent.ask",
+          "group": "2_xagent@1",
+          "when": "editorHasSelection"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "X-Agent",
+      "properties": {
+        "xagent.serverHost": {
+          "type": "string",
+          "default": "127.0.0.1",
+          "description": "X-Agent server host"
+        },
+        "xagent.serverPort": {
+          "type": "number",
+          "default": 7727,
+          "description": "X-Agent server port"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,0 +1,68 @@
+[
+  {
+    "scenario": "basic_spawn",
+    "workers": 2,
+    "tasks": 4,
+    "pool_startup_sec": 0.03,
+    "map_time_sec": 0.226,
+    "total_time_sec": 0.38,
+    "results": [
+      {
+        "task_id": "t0",
+        "pid": 46008,
+        "goal": "Task 0",
+        "result": 75025,
+        "elapsed_sec": 0.0139,
+        "worker_start_delay": 0.1003
+      },
+      {
+        "task_id": "t1",
+        "pid": 43328,
+        "goal": "Task 1",
+        "result": 196418,
+        "elapsed_sec": 0.0363,
+        "worker_start_delay": 0.1002
+      },
+      {
+        "task_id": "t2",
+        "pid": 46008,
+        "goal": "Task 2",
+        "result": 514229,
+        "elapsed_sec": 0.0928,
+        "worker_start_delay": 0.1144
+      },
+      {
+        "task_id": "t3",
+        "pid": 43328,
+        "goal": "Task 3",
+        "result": 75025,
+        "elapsed_sec": 0.0131,
+        "worker_start_delay": 0.1367
+      }
+    ]
+  },
+  {
+    "scenario": "workflow_simulation",
+    "workers": 3,
+    "batches": 2,
+    "pool_startup_sec": 0.01,
+    "batch1_time_sec": 0.229,
+    "batch2_time_sec": 0.0,
+    "total_time_sec": 0.27
+  },
+  {
+    "scenario": "stress_test",
+    "workers": 4,
+    "tasks": 20,
+    "pool_startup_sec": 0.01,
+    "map_time_sec": 0.382,
+    "total_time_sec": 0.42,
+    "throughput": 52.4,
+    "pid_distribution": {
+      "29520": 4,
+      "36036": 6,
+      "23960": 6,
+      "20288": 4
+    }
+  }
+]

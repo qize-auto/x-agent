@@ -1,0 +1,63 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "xagent"
+version = "0.2.0"
+description = "通用 AI Agent 框架 — 多模型、多工具、视觉感知、工作流引擎"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "X-Agent Team"},
+]
+keywords = ["agent", "llm", "ai", "automation", "swe-bench"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    "openai>=1.0",
+    "httpx>=0.25",
+    "chromadb>=0.4",
+    "sentence-transformers>=2.3",
+    "watchdog>=3.0",
+    "gitpython>=3.1",
+    "psutil>=5.9",
+    "pyyaml>=6.0",
+    "rich>=13.0",
+    "prompt-toolkit>=3.0",
+    "tree-sitter>=0.20",
+    "jedi>=0.19",
+]
+
+[project.optional-dependencies]
+gui = ["PySide6>=6.8"]
+dev = ["pytest>=7.0", "pytest-asyncio>=0.21", "black>=23.0", "ruff>=0.1"]
+
+[project.scripts]
+xagent = "xagent.cli.app:main"
+
+[project.urls]
+Homepage = "https://github.com/x-agent/x-agent"
+Repository = "https://github.com/x-agent/x-agent"
+
+[tool.hatch.build.targets.wheel]
+packages = ["xagent"]
+
+[tool.black]
+line-length = 120
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 120
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]

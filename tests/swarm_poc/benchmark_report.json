@@ -1,0 +1,29 @@
+[
+  {
+    "mode": "single_thread",
+    "elapsed_sec": 0.001,
+    "executed": 1
+  },
+  {
+    "mode": "swarm_2w",
+    "elapsed_sec": 0.781,
+    "executed": 1,
+    "stats": {
+      "submitted": 1,
+      "completed": 1,
+      "failed": 0,
+      "retried": 0
+    }
+  },
+  {
+    "mode": "swarm_4w",
+    "elapsed_sec": 0.797,
+    "executed": 1,
+    "stats": {
+      "submitted": 1,
+      "completed": 1,
+      "failed": 0,
+      "retried": 0
+    }
+  }
+]

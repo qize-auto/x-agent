@@ -1,0 +1,33 @@
+site_name: X-Agent 文档
+site_url: https://x-agent.github.io/x-agent/
+theme:
+  name: mkdocs
+  highlightjs: true
+  hljs_languages:
+    - python
+    - yaml
+    - bash
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [xagent]
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+
+nav:
+  - 首页: index.md
+  - 快速开始: getting-started.md
+  - API 参考:
+    - Core: api/core.md
+    - CLI: api/cli.md
+    - Eval: api/eval.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/x-agent/x-agent

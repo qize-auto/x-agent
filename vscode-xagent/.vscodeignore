@@ -1,0 +1,7 @@
+src/
+media/*.css
+media/*.js
+node_modules/
+package-lock.json
+tsconfig.json
+.vscode/

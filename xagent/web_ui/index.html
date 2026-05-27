@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X-Agent Panel</title>
+  <link rel="stylesheet" href="panel.css">
+  <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>🤖 X-Agent</h1>
+      <span id="status-badge" class="badge idle">就绪</span>
+    </header>
+
+    <main>
+      <div id="chat-history"></div>
+    </main>
+
+    <aside id="tools-panel">
+      <h3>🔧 最近工具调用</h3>
+      <ul id="tool-list"></ul>
+    </aside>
+
+    <aside id="swarm-panel" style="display:none;">
+      <h3>🐝 Swarm 状态</h3>
+      <div id="swarm-status">
+        <div class="swarm-stat-row">
+          <span>状态</span><span id="swarm-enabled">-</span>
+        </div>
+        <div class="swarm-stat-row">
+          <span>Workers</span><span id="swarm-workers">-</span>
+        </div>
+        <div class="swarm-stat-row">
+          <span>待处理</span><span id="swarm-pending">0</span>
+        </div>
+        <div class="swarm-stat-row">
+          <span>运行中</span><span id="swarm-running">0</span>
+        </div>
+        <div class="swarm-stat-row">
+          <span>已完成</span><span id="swarm-completed">0</span>
+        </div>
+        <div class="swarm-stat-row">
+          <span>失败</span><span id="swarm-failed">0</span>
+        </div>
+      </div>
+      <div id="swarm-recent" style="margin-top:8px;font-size:11px;max-height:150px;overflow:auto;"></div>
+    </aside>
+
+    <footer>
+      <textarea id="input-box" placeholder="输入指令或问题… (Ctrl+Enter 发送)"></textarea>
+      <button id="perceive-btn" title="感知当前屏幕">👁</button>
+      <button id="swarm-toggle-btn" title="切换 Swarm 面板">🐝</button>
+      <button id="send-btn">发送</button>
+    </footer>
+
+    <div id="toast"></div>
+  </div>
+
+  <script src="panel.js"></script>
+</body>
+</html>

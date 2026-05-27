@@ -1,0 +1,83 @@
+{
+  "version": "0.1.0",
+  "model": {
+    "provider": "openrouter",
+    "model_id": "openai/gpt-4o",
+    "api_key": "",
+    "base_url": "",
+    "temperature": 0.7,
+    "max_tokens": 4096
+  },
+  "model_presets": {
+    "gpt-4o": {
+      "provider": "openrouter",
+      "model_id": "openai/gpt-4o"
+    },
+    "claude-3-5": {
+      "provider": "openrouter",
+      "model_id": "anthropic/claude-3.5-sonnet"
+    },
+    "kimi-k2-5": {
+      "provider": "openrouter",
+      "model_id": "moonshot/kimi-k2.5"
+    },
+    "deepseek-chat": {
+      "provider": "openrouter",
+      "model_id": "deepseek/deepseek-chat"
+    },
+    "deepseek-r1": {
+      "provider": "openrouter",
+      "model_id": "deepseek/deepseek-r1"
+    },
+    "ollama-llama3": {
+      "provider": "ollama",
+      "model_id": "llama3.2"
+    }
+  },
+  "safety": {
+    "mode": "semi",
+    "dangerous_commands": [
+      "rm",
+      "rmdir",
+      "del",
+      "format",
+      "mkfs",
+      "dd",
+      "shutdown",
+      "reboot",
+      "reg delete"
+    ],
+    "allowed_dirs": []
+  },
+  "memory": {
+    "enabled": true,
+    "persist_dir": "~/.xagent/memory",
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "max_history": 50
+  },
+  "tools": {
+    "enabled": [
+      "filesystem",
+      "shell",
+      "web_search",
+      "git"
+    ],
+    "web_search_engine": "duckduckgo"
+  },
+  "gui": {
+    "theme": "dark",
+    "window_geometry": [
+      80,
+      60,
+      1480,
+      900
+    ],
+    "auto_start": true
+  },
+  "cli": {
+    "streaming": true,
+    "show_tool_calls": true
+  },
+  "project_root": "~/kimi-workspace",
+  "first_run": true
+}
