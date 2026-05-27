@@ -81,8 +81,15 @@ class EvalRunner:
                 goal = self._build_goal(instance)
                 plan = self.agent_loop.run_task(goal, mode="interactive")
                 result.logs.append(f"Agent plan status: {plan.status}")
-                # TODO: 从 plan 或 memory 中提取生成的 patch
-                result.patch = ""
+                # 从 git diff 提取 Agent 的修改
+                try:
+                    diff_result = subprocess.run(
+                        ["git", "-C", str(repo_dir), "diff"],
+                        capture_output=True, text=True, check=True,
+                    )
+                    result.patch = diff_result.stdout
+                except Exception:
+                    result.patch = ""
             else:
                 result.logs.append("No agent_loop provided, skipping fix generation")
                 result.patch = ""

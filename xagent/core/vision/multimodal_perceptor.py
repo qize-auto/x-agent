@@ -13,9 +13,15 @@ from .base import BasePerceptor, UIElement, UIPerception
 
 # 已知支持视觉的模型标识（小写匹配）
 VISION_MODEL_PATTERNS = [
-    "gpt-4o", "gpt-4-turbo",
+    # OpenAI
+    "gpt-4o", "gpt-4-turbo", "gpt-4.1", "gpt-4.1-mini",
+    # Google
     "gemini-1.5", "gemini-1.5-pro", "gemini-1.5-flash",
+    "gemini-2.5", "gemini-2.5-pro", "gemini-2.5-flash",
+    # Anthropic
     "claude-3-5-sonnet", "claude-3-opus", "claude-3-sonnet",
+    "claude-4", "claude-4-sonnet", "claude-4-opus",
+    # Others
     "qwen-vl", "llava", "cogvlm", "bakllava",
 ]
 

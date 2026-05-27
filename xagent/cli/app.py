@@ -107,7 +107,7 @@ def cmd_chat(args):
     print("=" * 50)
     print("🤖 X-Agent 终端模式")
     print(f"模型: {config.model.get('model_id', '?')}")
-    print("命令: /exit | /model | /task <目标> | /memory | /route | /forget <type> | /cache | /pro | /session reset")
+    print("命令: /exit | /model | /task <目标> | /memory | /route | /forget <type> | /cache | /pro | /session reset | /screenshot")
     print("=" * 50)
 
     while True:
@@ -242,6 +242,22 @@ def cmd_chat(args):
             print("\n🤖", result)
         except Exception as e:
             print(f"\n❌ 错误: {e}")
+
+    # 会话结束：显示成本摘要
+    if loop._telemetry:
+        stats = loop._telemetry.get_stats()
+        print("\n" + "=" * 50)
+        print("💰 本次会话成本摘要")
+        print(f"  LLM 调用: {stats['total_llm_calls']} 次")
+        print(f"  工具调用: {stats['total_tool_calls']} 次")
+        print(f"  总成本: ${stats['total_cost_usd']:.6f}")
+        print("=" * 50)
+    elif loop._cache_loop:
+        stats = loop._cache_loop.get_stats()
+        print("\n" + "=" * 50)
+        print("💰 本次会话成本摘要")
+        print(f"  总成本: ${stats['total_cost_usd']}")
+        print("=" * 50)
 
 
 def cmd_model(args):
@@ -866,7 +882,210 @@ def cmd_mcp(args):
             print(f"❌ 调用失败: {e}")
         return
 
-    print("用法: xagent mcp [--list|--connect NAME|--call SERVER.TOOL ARGS_JSON]")
+    if args.install:
+        from ..core.mcp.manager import MCPServerManager
+        name = args.install[0]
+        if not args.command:
+            print("--install 需要指定 NAME，例如: --install filesystem --command npx --args '-y,@modelcontextprotocol/server-filesystem,/tmp'")
+            return
+        if not args.command:
+            print("--install 需要 --command 参数")
+            return
+        install_args = args.args.split(",") if args.args else []
+        manager = MCPServerManager()
+        ok = manager.install(
+            name=name,
+            transport=args.transport,
+            command=args.command,
+            args=install_args,
+            trusted=args.trusted,
+        )
+        if ok:
+            print(f"✅ 已安装 MCP server: {name}")
+            # 尝试自动启动
+            started = manager.start(name)
+            if started:
+                print(f"🚀 已自动启动: {name}")
+        else:
+            print(f"❌ 安装失败: {name}")
+        return
+
+    if args.uninstall:
+        from ..core.mcp.manager import MCPServerManager
+        name = args.uninstall
+        manager = MCPServerManager()
+        ok = manager.uninstall(name)
+        if ok:
+            print(f"✅ 已卸载 MCP server: {name}")
+        else:
+            print(f"❌ 卸载失败: {name}")
+        return
+
+    if args.start:
+        from ..core.mcp.manager import MCPServerManager
+        name = args.start
+        manager = MCPServerManager()
+        ok = manager.start(name)
+        if ok:
+            print(f"🚀 已启动 MCP server: {name}")
+        else:
+            print(f"❌ 启动失败: {name}")
+        return
+
+    if args.stop:
+        from ..core.mcp.manager import MCPServerManager
+        name = args.stop
+        manager = MCPServerManager()
+        ok = manager.stop(name)
+        if ok:
+            print(f"🛑 已停止 MCP server: {name}")
+        else:
+            print(f"❌ 停止失败: {name}")
+        return
+
+    if args.status:
+        from ..core.mcp.manager import MCPServerManager
+        name = args.status
+        manager = MCPServerManager()
+        servers = manager.list_servers()
+        srv = next((s for s in servers if s["name"] == name), None)
+        if not srv:
+            print(f"未找到 MCP server: {name}")
+            return
+        status_map = {0: "未启动", 1: "运行中", 2: "已断开", 3: "错误"}
+        print(f"📊 MCP Server: {name}")
+        print(f"   传输: {srv.get('transport', 'stdio')}")
+        print(f"   命令: {srv.get('command', '')} {' '.join(srv.get('args', []))}")
+        print(f"   状态: {status_map.get(srv.get('status', 0), '未知')}")
+        print(f"   可信: {'是' if srv.get('trusted') else '否'}")
+        print(f"   描述: {srv.get('description', '')}")
+        return
+
+    print("用法: xagent mcp [--list|--connect NAME|--call SERVER.TOOL ARGS_JSON|--install NAME --command CMD|--uninstall NAME|--start NAME|--stop NAME|--status NAME]")
+
+
+
+def cmd_benchmark(args):
+    """运行 SWE-bench 基准测试"""
+    from ..eval.swe_bench import SWEBenchDataset
+    from ..eval.runner import EvalRunner
+    from ..eval.report import ReportGenerator
+    from ..config import XAgentConfig
+    from ..core.llm_client import LLMClient
+    from ..core.agent_loop import AgentLoop
+    from ..core.tool_registry import ToolRegistry
+    from ..core.memory_engine import MemoryEngine
+    from ..tools import register_all_tools
+
+    if args.dry_run:
+        dataset = SWEBenchDataset.from_jsonl(args.dataset)
+        instances = dataset.instances[:args.limit] if args.limit else dataset.instances
+        print(f"干运行模式 — 将评估 {len(instances)} 个实例:")
+        for inst in instances:
+            print(f"  - {inst.instance_id} ({inst.repo})")
+        return
+
+    # 初始化 Agent
+    config = XAgentConfig()
+    client = LLMClient.from_config(config.model)
+    tools = ToolRegistry()
+    register_all_tools(tools, project_root=str(config.project_root))
+    memory = MemoryEngine(config.memory.get("persist_dir", str(Path.home() / ".xagent" / "memory")))
+    loop = AgentLoop(llm=client, tools=tools, memory=memory, project_root=str(config.project_root))
+
+    # 加载数据集
+    dataset = SWEBenchDataset.from_jsonl(args.dataset)
+    instances = dataset.instances[:args.limit] if args.limit else dataset.instances
+    print(f"开始评估 {len(instances)} 个实例...")
+
+    # 运行评估
+    runner = EvalRunner(agent_loop=loop, max_workers=args.workers or 1)
+    results = runner.run(dataset, instance_filter=lambda i: i.instance_id in {inst.instance_id for inst in instances},
+                         progress_callback=lambda cur, total, inst_id: print(f"[{cur}/{total}] {inst_id}"))
+
+    # 生成报告
+    gen = ReportGenerator(results)
+    gen.print_summary()
+
+    if args.output:
+        if args.output.endswith('.json'):
+            gen.to_json(args.output)
+        else:
+            Path(args.output).write_text(gen.to_markdown(), encoding='utf-8')
+        print(f"\n报告已保存: {args.output}")
+
+
+
+def cmd_a2a(args):
+    """A2A Agent-to-Agent 协议"""
+    from ..core.a2a import A2AServer, A2AClient, AgentCard, Task, TextPart, Message, TaskStatus
+
+    if args.serve:
+        card = AgentCard(
+            name=args.name or "x-agent",
+            description=args.description or "X-Agent A2A endpoint",
+            url=f"http://{args.host}:{args.port}",
+            skills=[],
+        )
+
+        def handler(task: Task) -> Task:
+            # 默认处理：将消息内容作为任务结果返回
+            text = ""
+            if task.message:
+                for p in task.message.parts:
+                    if hasattr(p, "text"):
+                        text += p.text + " "
+            task.status = TaskStatus.COMPLETED
+            task.artifacts.append({"name": "result", "parts": [TextPart(text=text or "OK")]})
+            return task
+
+        server = A2AServer(card, host=args.host, port=args.port, task_handler=handler)
+        server.start()
+        print(f"🌐 A2A Server 启动: {server.url}")
+        print(f"   Agent Card: {server.url}/agent-card")
+        print("按 Ctrl+C 停止...")
+        try:
+            import time
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print("停止 A2A Server")
+            server.stop()
+        return
+
+    if args.card:
+        client = A2AClient(args.card)
+        card = client.get_agent_card()
+        if card:
+            print(f"Agent: {card.name}")
+            print(f"Description: {card.description}")
+            print(f"URL: {card.url}")
+            print(f"Capabilities: {card.capabilities}")
+        else:
+            print("❌ 无法获取 Agent Card")
+        client.close()
+        return
+
+    if args.send:
+        if len(args.send) < 2:
+            print("用法: --send URL \"message\"")
+            return
+        url, msg_text = args.send[0], args.send[1]
+        client = A2AClient(url)
+        task = client.send_task(text=msg_text)
+        if task:
+            print(f"Task ID: {task.id}")
+            print(f"Status: {task.status.value}")
+            for a in task.artifacts:
+                for p in a.parts:
+                    if hasattr(p, "text"):
+                        print(f"Result: {p.text}")
+        else:
+            print("❌ 发送失败")
+        client.close()
+        return
+
+    print("用法: xagent a2a [--serve | --card URL | --send URL \"message\"]")
 
 
 def main(argv=None):
@@ -942,11 +1161,38 @@ def main(argv=None):
     p_si.add_argument("--threshold", type=int, help="设置触发进化的频率阈值")
     p_si.set_defaults(func=cmd_self_improve)
 
-    p_mcp = sub.add_parser("mcp", help="MCP Server 管理 (list/connect/call)")
+    p_mcp = sub.add_parser("mcp", help="MCP Server 管理 (list/connect/call/install/uninstall/start/stop/status)")
     p_mcp.add_argument("--list", action="store_true", help="列出已配置的 MCP servers")
     p_mcp.add_argument("--connect", help="连接并测试指定 MCP server")
     p_mcp.add_argument("--call", nargs=2, metavar=("SERVER.TOOL", "ARGS_JSON"), help="调用 MCP 工具")
+    p_mcp.add_argument("--install", nargs='+', metavar="ARGS", help="安装 MCP server: --install NAME --command CMD [--args ARGS] [--transport stdio|http]")
+    p_mcp.add_argument("--uninstall", help="卸载指定 MCP server")
+    p_mcp.add_argument("--start", help="启动指定 MCP server")
+    p_mcp.add_argument("--stop", help="停止指定 MCP server")
+    p_mcp.add_argument("--status", help="查看指定 MCP server 状态")
+    p_mcp.add_argument("--command", help="Server 命令（配合 --install）")
+    p_mcp.add_argument("--args", help="Server 参数，逗号分隔（配合 --install）")
+    p_mcp.add_argument("--transport", choices=["stdio", "http"], default="stdio", help="传输类型（配合 --install）")
+    p_mcp.add_argument("--trusted", action="store_true", help="标记为可信（配合 --install）")
     p_mcp.set_defaults(func=cmd_mcp)
+
+    p_a2a = sub.add_parser("a2a", help="A2A Agent-to-Agent 协议 (serve/card/send)")
+    p_a2a.add_argument("--serve", action="store_true", help="启动 A2A Server")
+    p_a2a.add_argument("--host", default="127.0.0.1", help="A2A Server 绑定地址")
+    p_a2a.add_argument("--port", type=int, default=7728, help="A2A Server 端口")
+    p_a2a.add_argument("--name", help="Agent 名称")
+    p_a2a.add_argument("--description", help="Agent 描述")
+    p_a2a.add_argument("--card", help="获取远端 Agent Card")
+    p_a2a.add_argument("--send", nargs=2, metavar=("URL", "MESSAGE"), help="发送任务到远端 Agent")
+    p_a2a.set_defaults(func=cmd_a2a)
+
+    p_bench = sub.add_parser("benchmark", help="运行 SWE-bench 基准测试")
+    p_bench.add_argument("--dataset", required=True, help="SWE-bench JSONL 数据集路径")
+    p_bench.add_argument("--output", help="报告输出路径 (.md 或 .json)")
+    p_bench.add_argument("--limit", type=int, help="限制评估实例数")
+    p_bench.add_argument("--workers", type=int, default=1, help="并行 Worker 数")
+    p_bench.add_argument("--dry-run", action="store_true", help="仅显示将要评估的实例")
+    p_bench.set_defaults(func=cmd_benchmark)
 
     args = parser.parse_args(argv)
     if not args.command:

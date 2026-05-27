@@ -147,5 +147,16 @@ class ToolRegistry:
         self._audit.log(name, arguments, result, confirmed=confirmed, duration_ms=duration_ms)
         return result
 
+    def unregister(self, name: str) -> bool:
+        """注销一个工具"""
+        if name in self._tools:
+            del self._tools[name]
+            return True
+        return False
+
+    def register_from_spec(self, spec: ToolSpec):
+        """从 ToolSpec 对象注册工具"""
+        self._tools[spec.name] = spec
+
     def __repr__(self):
         return f"ToolRegistry(tools={list(self._tools.keys())})"

@@ -23,6 +23,13 @@ X-Agent 是唯一具备**完整自我进化闭环**（失败分类 → 经验沉
 | **Repo Map 自动注入** | 惰性索引代码库，构建轻量符号图注入 LLM 上下文 |
 | **意图锚定** | 每 5 轮工具调用提醒原始目标，防止上下文膨胀导致漂移 |
 | **全链路超时保护** | LLM 网络 60s、并行工具 30s、Workflow 节点 60s、Agent 循环总时间预算按档位分配 |
+| **MCP Client 生产化** | 支持 stdio/http 传输，工具自动发现/注册，安全扫描，心跳保活，CLI 安装/管理 |
+| **Aider 风格 Diff 编辑** | `edit_file` 默认 SEARCH/REPLACE，支持多块原子编辑，失败自动回滚，语法/lint 门禁 |
+| **成本监控** | Token 使用跟踪，美元成本估算，回合结束自动压缩，/pro 单次升级 |
+| **GUI 截图感知** | 5 个感知器（a11y/OCR/multimodal/code_fusion/auto），`/screenshot` CLI 一键截图 |
+| **A2A 协议** | Google A2A 最小实现，Agent Card / Task / Artifact，server/client 双模式 |
+| **Swarm 分布式** | 单机多进程并行，Checkpoint 持久化，Consensus 共识，CLI `--swarm-workers` 一键启用 |
+| **性能基准** | SWE-bench 评估流水线，HumanEval 支持，Markdown/JSON 报告生成 |
 
 ## 快速开始
 
@@ -47,11 +54,31 @@ python -m xagent.cli app
 # 对话模式
 python -m xagent.cli app
 
+# MCP Server 管理
+python -m xagent.cli mcp --list
+python -m xagent.cli mcp --install filesystem --command npx --args "-y,@modelcontextprotocol/server-filesystem,/tmp"
+python -m xagent.cli mcp --start filesystem
+
+# GUI 截图感知
+python -m xagent.cli app
+# 在对话中输入: /screenshot
+
+# A2A 协议
+python -m xagent.cli a2a --serve --name my-agent
+python -m xagent.cli a2a --card http://localhost:7728
+python -m xagent.cli a2a --send http://localhost:7728 "Hello!"
+
+# 性能基准
+python -m xagent.cli benchmark --dataset swe-bench-lite.jsonl --limit 10 --dry-run
+
 # 自我改进系统状态
 python -m xagent.cli self-improve --status
 
 # 回滚 prompt 到上一版本
 python -m xagent.cli self-improve --rollback
+
+# Swarm 工作流
+python -m xagent.cli workflow --run workflow.yaml --swarm-workers 4
 ```
 
 ### GUI

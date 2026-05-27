@@ -619,10 +619,24 @@ class AgentLoop:
     def perceive_ui(self, target: str = "screen", **kwargs) -> "UIPerception | None":
         """
         执行 UI 视觉感知。
-        Returns None if vision layer is not enabled or unavailable.
+        支持懒加载：如果 vision 未初始化但配置存在，则尝试初始化。
+        Returns None if vision layer is not available.
         """
         if self._vision is None:
-            return None
+            # 懒加载：尝试初始化 vision（即使配置默认关闭）
+            vision_cfg = self.config.get("vision", {})
+            try:
+                from .vision.perceptor import VisionPerceptor
+                self._vision = VisionPerceptor(
+                    llm_client=self.llm,
+                    strategy=vision_cfg.get("strategy", "auto"),
+                    config=vision_cfg,
+                )
+                if not self._vision.is_available():
+                    self._vision = None
+                    return None
+            except Exception:
+                return None
         try:
             return self._vision.perceive(target, **kwargs)
         except Exception:

@@ -335,11 +335,27 @@ class LLMClient:
         注意：这只是粗略估算，OpenRouter 实际价格可能不同
         """
         prices = {
+            # OpenAI
             "gpt-4o": (2.50, 10.00),
+            "gpt-4.1": (2.00, 8.00),
+            "gpt-4.1-mini": (0.40, 1.60),
+            "o4-mini": (1.10, 4.40),
+            "o3": (10.00, 40.00),
+            # Anthropic
             "claude-3.5-sonnet": (3.00, 15.00),
+            "claude-4-sonnet": (3.00, 15.00),
+            "claude-4-opus": (15.00, 75.00),
+            # Moonshot
             "kimi-k2.5": (0.60, 2.50),
+            # DeepSeek
             "deepseek-chat": (0.14, 0.28),
             "deepseek-r1": (0.55, 2.19),
+            "deepseek-v4-flash": (0.05, 0.20),
+            "deepseek-v4-pro": (0.50, 2.00),
+            "deepseek-v3.2": (0.10, 0.50),
+            # Google
+            "gemini-2.5-flash": (0.15, 0.60),
+            "gemini-2.5-pro": (1.25, 10.00),
         }
         # 尝试匹配模型名
         for key, (input_price, output_price) in prices.items():
